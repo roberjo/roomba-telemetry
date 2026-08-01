@@ -12,22 +12,30 @@ tools like dorita980's `getpassword.js`:
    same TLS socket with a payload containing the local MQTT password.
 
 This protocol is not officially documented by iRobot and has drifted across
-firmware versions before — if the handshake doesn't work out of the box, cross-check
-against the current dorita980/roomba980-python implementations before assuming your
-robot is unsupported.
+firmware versions before. As of firmware in the 3.x range (2023+), dorita980's own
+docs report this local handshake no longer works at all on many robots — iRobot's
+TLS service still completes the handshake and accepts the magic packet, but never
+sends a password back. If that happens to you, use `--cloud` instead (see below),
+which retrieves the same BLID/password pairs through iRobot's official cloud login
+API using your iRobot app account.
 
 Usage:
     python -m collector.pairing --ip 192.168.1.50
+    python -m collector.pairing --cloud
 """
 
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
 import socket
 import ssl
 import sys
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
 DISCOVERY_PORT = 5678
 DISCOVERY_MESSAGE = b"irobotmcs"
@@ -40,6 +48,13 @@ GET_PASSWORD_TIMEOUT_S = 10
 # the BLID and then the password. Adjust HEADER_LEN if your firmware's response
 # doesn't parse cleanly — print the raw bytes and compare against dorita980.
 HEADER_LEN = 2
+
+# Cloud fallback (see dorita980's bin/getPasswordCloud.js) — used when the local
+# handshake above gets silently ignored by the robot's firmware. app_id is a fixed
+# constant dorita980 uses to identify itself as the (unofficial) Android app.
+DISCOVERY_ENDPOINTS_URL = "https://disc-prod.iot.irobotapi.com/v1/discover/endpoints?country_code=US"
+IROBOT_APP_ID = "ANDROID-C7FB240E-DF34-42D7-AE4E-A8C17079A294"
+HTTP_TIMEOUT_S = 15
 
 
 def discover(broadcast_ip: str = "255.255.255.255") -> dict | None:
@@ -87,11 +102,78 @@ def get_password(ip: str) -> bytes:
     return data[HEADER_LEN:]
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--ip", help="Roomba IP address (skips discovery if given)")
-    args = parser.parse_args()
+def _http_get_json(url: str) -> dict:
+    req = urllib.request.Request(url, headers={"Connection": "close"})
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_S) as resp:
+        return json.loads(resp.read())
 
+
+def _http_post_form(url: str, fields: dict) -> dict:
+    body = urllib.parse.urlencode(fields).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={"Connection": "close", "Content-Type": "application/x-www-form-urlencoded"},
+    )
+    with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_S) as resp:
+        return json.loads(resp.read())
+
+
+def _http_post_json(url: str, payload: dict) -> dict:
+    body = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={"Connection": "close", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT_S) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(f"iRobot login request failed: HTTP {exc.code} {exc.reason}") from exc
+
+
+def get_password_cloud(username: str, password: str) -> dict[str, str]:
+    """Retrieve {blid: local_mqtt_password} for every robot on this iRobot account,
+    via the same official cloud login flow the iRobot mobile app uses. Fallback for
+    firmware where the local handshake in get_password() is silently ignored."""
+    discovery = _http_get_json(DISCOVERY_ENDPOINTS_URL)
+    api_key = discovery["gigya"]["api_key"]
+    gigya_base = f"https://accounts.{discovery['gigya']['datacenter_domain']}"
+    http_base = discovery["deployments"][discovery["current_deployment"]]["httpBase"]
+
+    gigya_resp = _http_post_form(
+        f"{gigya_base}/accounts.login",
+        {
+            "apiKey": api_key,
+            "loginID": username,
+            "password": password,
+            "targetEnv": "mobile",
+            "format": "json",
+        },
+    )
+    if gigya_resp.get("errorCode"):
+        raise RuntimeError(f"iRobot login failed: {gigya_resp.get('errorMessage', gigya_resp)}")
+
+    login_resp = _http_post_json(
+        f"{http_base}/v2/login",
+        {
+            "app_id": IROBOT_APP_ID,
+            "assume_robot_ownership": 0,
+            "gigya": {
+                "signature": gigya_resp["UIDSignature"],
+                "timestamp": gigya_resp["signatureTimestamp"],
+                "uid": gigya_resp["UID"],
+            },
+        },
+    )
+    robots = login_resp.get("robots") or {}
+    if not robots:
+        raise RuntimeError(f"login succeeded but no robots were returned: {login_resp}")
+    return {blid: info["password"] for blid, info in robots.items()}
+
+
+def _main_local(args: argparse.Namespace) -> int:
     ip = args.ip
     blid = None
 
@@ -115,6 +197,7 @@ def main() -> int:
         password_bytes = get_password(ip)
     except (TimeoutError, OSError, RuntimeError) as exc:
         print(f"Failed to retrieve password: {exc}", file=sys.stderr)
+        print("If this keeps happening, try `--cloud` instead.", file=sys.stderr)
         return 1
 
     password = password_bytes.decode("utf-8", errors="replace").strip("\x00")
@@ -127,6 +210,43 @@ def main() -> int:
         print("ROOMBA_BLID=  # discovery didn't return a BLID, find it in the iRobot app")
     print(f"ROOMBA_PASSWORD={password}")
     return 0
+
+
+def _main_cloud(args: argparse.Namespace) -> int:
+    username = input("iRobot account email: ")
+    password = getpass.getpass("iRobot account password (hidden, sent only to iRobot's servers): ")
+
+    try:
+        robots = get_password_cloud(username, password)
+    except (TimeoutError, OSError, RuntimeError, KeyError) as exc:
+        print(f"Failed to retrieve password via cloud: {exc}", file=sys.stderr)
+        return 1
+
+    print(f"\nFound {len(robots)} robot(s) on this account:\n")
+    for blid, robot_password in robots.items():
+        print(f"ROOMBA_BLID={blid}")
+        print(f"ROOMBA_PASSWORD={robot_password}")
+        if args.ip and len(robots) == 1:
+            print(f"ROOMBA_IP={args.ip}")
+        print()
+    if not args.ip:
+        print("Set ROOMBA_IP to this robot's LAN IP (see `python -m collector.pairing` "
+              "discovery output, or your router's client list).")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--ip", help="Roomba IP address (skips discovery if given)")
+    parser.add_argument(
+        "--cloud",
+        action="store_true",
+        help="use the iRobot cloud login instead of the local handshake (fallback for "
+        "firmware where the local method is silently ignored)",
+    )
+    args = parser.parse_args()
+
+    return _main_cloud(args) if args.cloud else _main_local(args)
 
 
 if __name__ == "__main__":
