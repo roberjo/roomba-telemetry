@@ -25,7 +25,14 @@ function findNext(schedule: WeeklySchedule): { day: number; time: string; daysAw
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-  for (let offset = 0; offset < 7; offset++) {
+  // Walk a full 8-day window (today .. today+7), not just today..+6. If the
+  // *only* active day is today and today's time has already passed, offsets
+  // 1-6 never match (nothing else is active) and offset 0 is excluded by the
+  // "already passed" guard — without the extra day, that schedule would
+  // incorrectly report "no cleanings scheduled" instead of "same day, next
+  // week." offset 7 wraps back to today, but skips the already-passed guard
+  // since a week from now is unambiguously in the future.
+  for (let offset = 0; offset <= 7; offset++) {
     const day = (now.getDay() + offset) % 7;
     if (!isActive(schedule, day)) continue;
     const hour = schedule.hour[day];
@@ -92,8 +99,14 @@ export default function ScheduleCard() {
           <>
             Next clean:{" "}
             <strong>
-              {next.daysAway === 0 ? "Today" : next.daysAway === 1 ? "Tomorrow" : DAY_FULL[next.day]} at{" "}
-              {next.time}
+              {next.daysAway === 0
+                ? "Today"
+                : next.daysAway === 1
+                  ? "Tomorrow"
+                  : next.daysAway === 7
+                    ? `Next ${DAY_FULL[next.day]}`
+                    : DAY_FULL[next.day]}{" "}
+              at {next.time}
             </strong>
           </>
         ) : (
