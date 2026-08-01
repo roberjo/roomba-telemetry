@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { subscribeLiveStatus, type Status } from "../lib/api";
+import Roombie from "./Roombie";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -23,7 +24,10 @@ export default function ScheduleCard() {
     <section className="card">
       <h2>Weekly schedule</h2>
       {!schedule ? (
-        <p>No schedule data yet.</p>
+        <div className="empty-state">
+          <Roombie mood={status ? "idle" : "thinking"} size={40} />
+          <p>{status ? "No schedule data yet." : "Waiting for a status update…"}</p>
+        </div>
       ) : (
         <ul className="schedule-list">
           {DAY_LABELS.map((label, i) => {

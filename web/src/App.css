@@ -98,10 +98,7 @@ main {
 }
 
 .brand-mark {
-  width: 52px;
-  height: 52px;
   flex-shrink: 0;
-  filter: drop-shadow(0 0 14px rgba(45, 212, 238, 0.45));
 }
 
 .hero h1 {
@@ -158,6 +155,20 @@ main > .card {
   align-items: center;
   gap: 1.75rem;
   flex-wrap: wrap;
+}
+
+.roombie-hero {
+  flex-shrink: 0;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-state p {
+  margin: 0;
 }
 
 .command-actions {

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { api, subscribeLiveStatus, type MissionCommand, type Status } from "../lib/api";
+import Roombie, { statusMood, type RoombieMood } from "./Roombie";
+
+const COMMAND_ERROR_DISPLAY_MS = 5000;
 
 const GAUGE_RADIUS = 51;
 const GAUGE_CIRCUMFERENCE = 2 * Math.PI * GAUGE_RADIUS;
@@ -81,6 +84,14 @@ export default function CommandCenter() {
     return unsubscribe;
   }, []);
 
+  // Clears the command-send error after a few seconds so it doesn't linger
+  // forever and so Roombie's face reverts back to reflecting real robot state.
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => setError(null), COMMAND_ERROR_DISPLAY_MS);
+    return () => clearTimeout(timer);
+  }, [error]);
+
   async function send(command: MissionCommand) {
     setPending(command);
     setError(null);
@@ -99,6 +110,11 @@ export default function CommandCenter() {
   const dashoffset = GAUGE_CIRCUMFERENCE * (1 - (pct ?? 0) / 100);
   const badge = status ? phaseBadge(status) : null;
 
+  // Roombie's face reflects real robot state, but momentarily reacts to the
+  // outcome of a command you just sent — "thinking" while it's in flight,
+  // "error" if it failed — before settling back to whatever's actually true.
+  const mood: RoombieMood = pending !== null ? "thinking" : error ? "error" : statusMood(status);
+
   return (
     <section className="card command-center">
       <h2>
@@ -106,10 +122,14 @@ export default function CommandCenter() {
       </h2>
 
       {!status ? (
-        <p>Waiting for a status update…</p>
+        <div className="empty-state">
+          <Roombie mood="thinking" size={64} />
+          <p>Waiting for a status update…</p>
+        </div>
       ) : (
         <div className="command-grid">
           <div className="command-status">
+            <Roombie mood={mood} size={104} className="roombie-hero" />
             <div className={isCleaning ? "gauge gauge-active" : "gauge"}>
               <svg viewBox="0 0 116 116">
                 <circle className="gauge-track" cx="58" cy="58" r={GAUGE_RADIUS} />

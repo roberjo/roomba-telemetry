@@ -25,6 +25,41 @@ def test_find_and_spot_are_allowed_commands(monkeypatch):
     assert "spot" in ALLOWED_COMMANDS
 
 
+def test_stuck_mqtt_client_cannot_hang_the_request(monkeypatch):
+    """Regression test for a real bug: a stuck paho-mqtt client (loop_stop()/
+    disconnect() blocking forever) used to hang the whole request indefinitely,
+    since it was joined synchronously inside a `finally` block. _publish() now
+    runs that on a daemon thread with a hard wall-clock cap — verify it actually
+    gives up and raises within that cap instead of hanging, using a fake worker
+    that never returns to simulate the stuck case."""
+    import time
+
+    import api.mqtt_commands as mqtt_commands
+
+    monkeypatch.setenv("ROOMBA_IP", "192.168.1.99")
+    monkeypatch.setenv("ROOMBA_BLID", "test-blid")
+    monkeypatch.setenv("ROOMBA_PASSWORD", "test-password")
+    monkeypatch.setattr(mqtt_commands, "OVERALL_TIMEOUT_S", 0.3)
+
+    def stuck_forever(ip, blid, password, payload, result):
+        time.sleep(3600)
+
+    monkeypatch.setattr(mqtt_commands, "_publish_blocking", stuck_forever)
+
+    start = time.monotonic()
+    try:
+        mqtt_commands.send_command("start")
+        raised = False
+    except mqtt_commands.CommandError as exc:
+        raised = True
+        message = str(exc)
+    elapsed = time.monotonic() - start
+
+    assert raised
+    assert "stuck" in message
+    assert elapsed < 2, f"took {elapsed:.2f}s — should give up around OVERALL_TIMEOUT_S (0.3s)"
+
+
 def test_clean_room_route_not_swallowed_by_command_catchall(client, monkeypatch):
     """Regression test: /commands/{command} is registered after /commands/clean-room
     specifically so this exact collision doesn't happen — verify it via a real

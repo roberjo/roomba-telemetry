@@ -1,0 +1,152 @@
+.roombie {
+  overflow: visible;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--roombie-color) 55%, transparent));
+  transition: filter 0.4s ease;
+}
+
+.roombie-rim-glow {
+  filter: drop-shadow(0 0 4px var(--roombie-color));
+  transition: stroke 0.4s ease;
+}
+
+.roombie-antenna circle {
+  animation: roombie-antenna-pulse 2s ease-in-out infinite;
+}
+
+@keyframes roombie-antenna-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes roombie-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+.roombie-bob {
+  animation: roombie-bob 3.2s ease-in-out infinite;
+}
+
+@keyframes roombie-bob-active {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(2deg);
+  }
+}
+.roombie-bob-active {
+  animation: roombie-bob-active 1.1s ease-in-out infinite;
+}
+
+@keyframes roombie-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+.roombie-breathe {
+  animation: roombie-breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes roombie-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+  40% {
+    transform: translateX(3px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(2px) rotate(2deg);
+  }
+}
+.roombie-shake {
+  animation: roombie-shake 0.5s ease-in-out infinite;
+}
+
+.roombie-dots circle {
+  animation: roombie-dot-pulse 1.2s ease-in-out infinite;
+}
+.roombie-dots circle:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.roombie-dots circle:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes roombie-dot-pulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.roombie-sparkle {
+  animation: roombie-sparkle-twinkle 1.6s ease-in-out infinite;
+  transform-origin: center;
+}
+.roombie-sparkle-b {
+  animation-delay: 0.5s;
+}
+
+@keyframes roombie-sparkle-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.roombie-zzz text {
+  animation: roombie-zzz-float 2.4s ease-in infinite;
+}
+.roombie-zzz text:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+@keyframes roombie-zzz-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(4px, -10px);
+  }
+}

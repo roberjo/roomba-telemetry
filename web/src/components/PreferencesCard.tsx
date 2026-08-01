@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { subscribeLiveStatus, type Status } from "../lib/api";
+import Roombie from "./Roombie";
 
 const PREFS: { key: keyof Status; label: string }[] = [
   { key: "pref_carpet_boost", label: "Carpet boost" },
@@ -20,7 +21,10 @@ export default function PreferencesCard() {
     <section className="card">
       <h2>Preferences</h2>
       {!status ? (
-        <p>Waiting for a status update…</p>
+        <div className="empty-state">
+          <Roombie mood="thinking" size={40} />
+          <p>Waiting for a status update…</p>
+        </div>
       ) : (
         <ul className="pref-list">
           {PREFS.map(({ key, label }) => {

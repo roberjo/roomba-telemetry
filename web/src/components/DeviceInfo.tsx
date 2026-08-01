@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { subscribeLiveStatus, type Status } from "../lib/api";
+import Roombie from "./Roombie";
 
 function timeAgo(unixSeconds: number): string {
   const diffMin = Math.round((Date.now() / 1000 - unixSeconds) / 60);
@@ -21,7 +22,10 @@ export default function DeviceInfo() {
     return (
       <section className="card">
         <h2>Device</h2>
-        <p>Waiting for a status update…</p>
+        <div className="empty-state">
+          <Roombie mood="thinking" size={40} />
+          <p>Waiting for a status update…</p>
+        </div>
       </section>
     );
   }
