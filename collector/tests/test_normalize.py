@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from collector.normalize import normalize
+from collector.normalize import normalize, WEEKDAYS
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -56,3 +56,46 @@ def test_normalize_missing_fields_default_to_none():
 def test_normalize_rejects_unknown_model_class():
     with pytest.raises(ValueError):
         normalize({}, "definitely-not-a-real-model-class")
+
+
+def test_normalize_extracts_device_info_and_last_command():
+    reported = _load_reported("600-series-full-state.json")
+    state = normalize(reported, "non-mapping")
+
+    assert state.robot_name == "Roomba"
+    assert state.sku == "R692020"
+    assert state.software_version == "3.5.17+we+21"
+    assert state.last_command == "spot"
+    assert state.last_command_initiator == "manual"
+    assert state.last_command_time == 1785615551
+
+
+def test_normalize_extracts_preferences():
+    reported = _load_reported("600-series-full-state.json")
+    state = normalize(reported, "non-mapping")
+
+    assert state.pref_carpet_boost is False
+    assert state.pref_vac_high is False
+    assert state.pref_two_pass is False
+    assert state.pref_eco_charge is False
+    assert state.pref_bin_pause is False
+
+
+def test_normalize_extracts_schedule():
+    reported = _load_reported("600-series-full-state.json")
+    state = normalize(reported, "non-mapping")
+
+    assert state.schedule_json is not None
+    schedule = json.loads(state.schedule_json)
+    assert schedule["cycle"] == ["none"] * 7
+    assert schedule["hour"][1] == 9
+    assert len(WEEKDAYS) == 7
+
+
+def test_normalize_without_device_info_defaults_to_none():
+    state = normalize({}, "non-mapping")
+
+    assert state.robot_name is None
+    assert state.last_command is None
+    assert state.schedule_json is None
+    assert state.pref_carpet_boost is None

@@ -7,7 +7,7 @@ import sqlite3
 from fastapi import APIRouter, Depends, HTTPException
 
 from ..db import get_db
-from ..schemas import StatusResponse
+from ..schemas import StatusResponse, status_response_from_row
 
 router = APIRouter()
 
@@ -19,4 +19,4 @@ def get_status(conn: sqlite3.Connection = Depends(get_db)) -> StatusResponse:
     ).fetchone()
     if row is None:
         raise HTTPException(status_code=404, detail="no state snapshots recorded yet")
-    return StatusResponse(**dict(row))
+    return status_response_from_row(row)

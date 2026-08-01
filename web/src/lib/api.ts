@@ -7,6 +7,13 @@ const WS_BASE_URL = API_BASE_URL.replace(/^http/, "ws");
 
 export type ModelClass = "non-mapping" | "mapping";
 
+export interface WeeklySchedule {
+  // index 0 = Sunday, matching the robot's own convention
+  cycle: (string | null)[];
+  hour: (number | null)[];
+  minute: (number | null)[];
+}
+
 export interface Status {
   received_at: number;
   model_class: ModelClass;
@@ -21,6 +28,22 @@ export interface Status {
   mission_minutes: number | null;
   mission_sqft: number | null;
   mission_initiator: string | null;
+
+  robot_name: string | null;
+  sku: string | null;
+  software_version: string | null;
+
+  last_command: string | null;
+  last_command_initiator: string | null;
+  last_command_time: number | null;
+
+  pref_carpet_boost: boolean | null;
+  pref_vac_high: boolean | null;
+  pref_two_pass: boolean | null;
+  pref_eco_charge: boolean | null;
+  pref_bin_pause: boolean | null;
+
+  schedule: WeeklySchedule | null;
 
   // mapping-model-only — always check for null, even if model_class === "mapping"
   pose_x: number | null;
@@ -55,6 +78,16 @@ async function getJSON<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+export type MissionCommand = "start" | "stop" | "pause" | "resume" | "dock" | "find" | "spot";
+
+async function postCommand(command: MissionCommand): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/commands/${command}`, { method: "POST" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail ?? `POST /commands/${command} failed: ${res.status}`);
+  }
+}
+
 export const api = {
   getStatus: () => getJSON<Status>("/status"),
   listMissions: (limit = 50, offset = 0) =>
@@ -62,6 +95,7 @@ export const api = {
   getMission: (id: number) => getJSON<Mission>(`/missions/${id}`),
   listErrors: (limit = 50, offset = 0) =>
     getJSON<ErrorEvent[]>(`/errors?limit=${limit}&offset=${offset}`),
+  sendCommand: postCommand,
 };
 
 /** Subscribes to /live; returns an unsubscribe function. */

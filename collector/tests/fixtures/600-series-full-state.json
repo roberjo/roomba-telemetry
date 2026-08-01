@@ -1,0 +1,44 @@
+{
+  "state": {
+    "reported": {
+      "batPct": 100,
+      "batteryType": "lith",
+      "bin": {
+        "full": false,
+        "present": true
+      },
+      "carpetBoost": false,
+      "vacHigh": false,
+      "twoPass": false,
+      "ecoCharge": false,
+      "binPause": false,
+      "cleanMissionStatus": {
+        "cycle": "none",
+        "error": 0,
+        "expireM": 0,
+        "initiator": "",
+        "mssnM": 0,
+        "nMssn": 67,
+        "notReady": 0,
+        "phase": "charge",
+        "rechrgM": 0,
+        "sqft": 0
+      },
+      "cleanSchedule": {
+        "cycle": ["none", "none", "none", "none", "none", "none", "none"],
+        "h": [2, 9, 9, 9, 9, 9, 9],
+        "m": [0, 0, 0, 0, 0, 0, 0]
+      },
+      "hardwareRev": 21,
+      "lastCommand": {
+        "command": "spot",
+        "initiator": "manual",
+        "time": 1785615551
+      },
+      "name": "Roomba",
+      "sku": "R692020",
+      "softwareVer": "3.5.17+we+21",
+      "timezone": "America/New_York"
+    }
+  }
+}

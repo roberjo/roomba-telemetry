@@ -1,13 +1,14 @@
 [project]
 name = "roomba-api"
 version = "0.1.0"
-description = "FastAPI service exposing Roomba state/mission/error history from SQLite."
+description = "FastAPI service exposing Roomba state/mission/error history from SQLite, and mission-control commands over MQTT."
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
     "pydantic>=2.6",
     "python-dotenv>=1.0",
+    "paho-mqtt>=2.0",
 ]
 
 [project.optional-dependencies]

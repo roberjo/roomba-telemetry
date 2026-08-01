@@ -23,13 +23,18 @@ export default function MapView() {
       {!hasPose ? (
         <p>No pose data (robot may be docked or between missions).</p>
       ) : (
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height={SIZE} role="img">
-          <rect x={0} y={0} width={SIZE} height={SIZE} fill="none" stroke="currentColor" opacity={0.2} />
+        <svg className="map-frame" viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" height={SIZE} role="img">
           <circle
+            className="map-blip-ring"
             cx={SIZE / 2 + (status!.pose_x as number) * SCALE}
             cy={SIZE / 2 - (status!.pose_y as number) * SCALE}
             r={6}
-            fill="currentColor"
+          />
+          <circle
+            className="map-blip"
+            cx={SIZE / 2 + (status!.pose_x as number) * SCALE}
+            cy={SIZE / 2 - (status!.pose_y as number) * SCALE}
+            r={5}
           />
         </svg>
       )}

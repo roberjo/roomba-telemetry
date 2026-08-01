@@ -30,6 +30,18 @@ CREATE TABLE IF NOT EXISTS state_snapshots (
     mission_minutes INTEGER,
     mission_sqft REAL,
     mission_initiator TEXT,
+    robot_name TEXT,
+    sku TEXT,
+    software_version TEXT,
+    last_command TEXT,
+    last_command_initiator TEXT,
+    last_command_time INTEGER,
+    pref_carpet_boost INTEGER,
+    pref_vac_high INTEGER,
+    pref_two_pass INTEGER,
+    pref_eco_charge INTEGER,
+    pref_bin_pause INTEGER,
+    schedule_json TEXT,
     pose_x REAL,
     pose_y REAL,
     pose_theta REAL
@@ -58,6 +70,36 @@ CREATE TABLE IF NOT EXISTS errors (
 );
 """
 
+_SNAPSHOT_COLUMNS = (
+    "received_at",
+    "model_class",
+    "battery_pct",
+    "bin_present",
+    "bin_full",
+    "cycle",
+    "phase",
+    "error_code",
+    "not_ready_code",
+    "mission_minutes",
+    "mission_sqft",
+    "mission_initiator",
+    "robot_name",
+    "sku",
+    "software_version",
+    "last_command",
+    "last_command_initiator",
+    "last_command_time",
+    "pref_carpet_boost",
+    "pref_vac_high",
+    "pref_two_pass",
+    "pref_eco_charge",
+    "pref_bin_pause",
+    "schedule_json",
+    "pose_x",
+    "pose_y",
+    "pose_theta",
+)
+
 
 class Storage:
     def __init__(self, db_path: str | Path):
@@ -69,18 +111,10 @@ class Storage:
 
     def write_snapshot(self, state: NormalizedState) -> None:
         d = state.to_dict()
+        columns = ", ".join(_SNAPSHOT_COLUMNS)
+        placeholders = ", ".join(f":{c}" for c in _SNAPSHOT_COLUMNS)
         self._conn.execute(
-            """
-            INSERT INTO state_snapshots (
-                received_at, model_class, battery_pct, bin_present, bin_full,
-                cycle, phase, error_code, not_ready_code, mission_minutes,
-                mission_sqft, mission_initiator, pose_x, pose_y, pose_theta
-            ) VALUES (
-                :received_at, :model_class, :battery_pct, :bin_present, :bin_full,
-                :cycle, :phase, :error_code, :not_ready_code, :mission_minutes,
-                :mission_sqft, :mission_initiator, :pose_x, :pose_y, :pose_theta
-            )
-            """,
+            f"INSERT INTO state_snapshots ({columns}) VALUES ({placeholders})",
             d,
         )
         if d.get("error_code"):

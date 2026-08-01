@@ -3,9 +3,19 @@ mapping-only fields are always Optional and must be null-checked by consumers.""
 
 from __future__ import annotations
 
-from typing import Optional
+import json
+import sqlite3
+from typing import List, Optional
 
 from pydantic import BaseModel
+
+
+class WeeklySchedule(BaseModel):
+    # index 0 = Sunday, matching the robot's own convention (see cleanSchedule
+    # in a raw payload — h/m are local start times, cycle is "clean" or "none")
+    cycle: List[Optional[str]]
+    hour: List[Optional[int]]
+    minute: List[Optional[int]]
 
 
 class StatusResponse(BaseModel):
@@ -22,6 +32,25 @@ class StatusResponse(BaseModel):
     mission_minutes: Optional[int] = None
     mission_sqft: Optional[float] = None
     mission_initiator: Optional[str] = None
+
+    # device identity — static, but re-sent with every state update
+    robot_name: Optional[str] = None
+    sku: Optional[str] = None
+    software_version: Optional[str] = None
+
+    # last command provenance
+    last_command: Optional[str] = None
+    last_command_initiator: Optional[str] = None
+    last_command_time: Optional[int] = None
+
+    # cleaning preferences (read-only)
+    pref_carpet_boost: Optional[bool] = None
+    pref_vac_high: Optional[bool] = None
+    pref_two_pass: Optional[bool] = None
+    pref_eco_charge: Optional[bool] = None
+    pref_bin_pause: Optional[bool] = None
+
+    schedule: Optional[WeeklySchedule] = None
 
     # mapping-model-only
     pose_x: Optional[float] = None
@@ -46,3 +75,14 @@ class ErrorEvent(BaseModel):
     occurred_at: float
     error_code: int
     mission_id: Optional[int] = None
+
+
+def status_response_from_row(row: sqlite3.Row) -> StatusResponse:
+    """Builds a StatusResponse from a state_snapshots row, decoding the
+    JSON-encoded schedule column into a structured field."""
+    d = dict(row)
+    schedule_json = d.pop("schedule_json", None)
+    if schedule_json:
+        raw = json.loads(schedule_json)
+        d["schedule"] = WeeklySchedule(cycle=raw["cycle"], hour=raw["hour"], minute=raw["minute"])
+    return StatusResponse(**d)

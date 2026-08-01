@@ -13,7 +13,7 @@ import sqlite3
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from ..db import get_connection
-from ..schemas import StatusResponse
+from ..schemas import status_response_from_row
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ async def live(websocket: WebSocket) -> None:
             ).fetchone()
             if row is not None:
                 last_received_at = row["received_at"]
-                status = StatusResponse(**dict(row))
+                status = status_response_from_row(row)
                 await websocket.send_json(status.model_dump())
             await asyncio.sleep(POLL_INTERVAL_S)
     except WebSocketDisconnect:
