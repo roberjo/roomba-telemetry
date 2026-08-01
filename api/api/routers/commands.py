@@ -6,8 +6,6 @@ physical robot move. See ../mqtt_commands.py for the allowlist and MQTT details.
 
 from __future__ import annotations
 
-from typing import List
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -26,7 +24,7 @@ class Region(BaseModel):
 class RoomCleanRequest(BaseModel):
     pmap_id: str
     user_pmapv_id: str
-    regions: List[Region]
+    regions: list[Region]
     ordered: bool = False
 
 

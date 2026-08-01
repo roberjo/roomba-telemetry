@@ -1,0 +1,7 @@
+target-version = "py311"
+
+[lint]
+# B008: `Depends(...)` in a FastAPI route's argument defaults is the
+# idiomatic, documented pattern (see fastapi.tiangolo.com/tutorial/dependencies)
+# — not a bug. Every other default-B (bugbear) check stays enabled.
+ignore = ["B008"]
