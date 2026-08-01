@@ -1,0 +1,34 @@
+{
+  "state": {
+    "reported": {
+      "ver": 3,
+      "hostname": "Roomba-XXXXXXXXXXXXXXXX",
+      "batPct": 45,
+      "bin": {
+        "present": true,
+        "full": false
+      },
+      "cleanMissionStatus": {
+        "cycle": "clean",
+        "phase": "stop",
+        "expireM": 0,
+        "rechrgM": 0,
+        "error": 16,
+        "notReady": 0,
+        "mssnM": 9,
+        "sqft": 60,
+        "initiator": "manual",
+        "nMssn": 133
+      },
+      "signal": {
+        "rssi": -55,
+        "snr": 35
+      },
+      "lastCommand": {
+        "command": "start",
+        "initiator": "manual",
+        "time": 1732004000
+      }
+    }
+  }
+}

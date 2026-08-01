@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# Node
+node_modules/
+web/dist/
+.vite/
+*.tsbuildinfo
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Env / secrets
+.env
+*.local
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+collector/data/
+*.jsonl
+
+# OS
+.DS_Store

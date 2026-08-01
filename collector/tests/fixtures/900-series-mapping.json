@@ -1,0 +1,41 @@
+{
+  "state": {
+    "reported": {
+      "ver": 3,
+      "hostname": "iRobot-YYYYYYYYYYYYYYYY",
+      "batPct": 91,
+      "bin": {
+        "present": true,
+        "full": false
+      },
+      "cleanMissionStatus": {
+        "cycle": "clean",
+        "phase": "run",
+        "expireM": 0,
+        "rechrgM": 0,
+        "error": 0,
+        "notReady": 0,
+        "mssnM": 22,
+        "sqft": 540,
+        "initiator": "localApp",
+        "nMssn": 87
+      },
+      "pose": {
+        "theta": 42,
+        "point": {
+          "x": 1250,
+          "y": -430
+        }
+      },
+      "signal": {
+        "rssi": -48,
+        "snr": 41
+      },
+      "lastCommand": {
+        "command": "start",
+        "initiator": "localApp",
+        "time": 1732000500
+      }
+    }
+  }
+}

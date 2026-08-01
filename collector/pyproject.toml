@@ -1,0 +1,21 @@
+[project]
+name = "roomba-collector"
+version = "0.1.0"
+description = "Connects to a Roomba's local MQTT API, normalizes state, and persists it."
+requires-python = ">=3.11"
+dependencies = [
+    "paho-mqtt>=2.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["collector"]
