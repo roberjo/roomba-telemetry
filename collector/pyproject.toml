@@ -19,3 +19,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["collector"]
+
+[tool.pytest.ini_options]
+# Makes the package importable directly from source regardless of editable-
+# install quirks (observed: a legacy pip editable .pth can silently fail to
+# take effect depending on install ordering vs. setuptools' own
+# distutils-precedence.pth) — this is what actually makes `pytest
+# collector/tests` reliable when run from the repo root, as CI does.
+pythonpath = ["."]

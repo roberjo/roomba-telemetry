@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call: # lets release.yml gate on this same suite instead of duplicating it
 
 jobs:
   collector:

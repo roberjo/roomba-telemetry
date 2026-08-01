@@ -23,3 +23,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["api"]
+
+[tool.pytest.ini_options]
+# See collector/pyproject.toml's identical setting for why — makes the package
+# importable directly from source regardless of editable-install ordering
+# quirks, which is what makes `pytest api/tests` reliable from the repo root.
+pythonpath = ["."]

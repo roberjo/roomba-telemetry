@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest an idea, including "fun functionality" experiments
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        See [PROJECT.md §5](../../PROJECT.md#5-fun-functionality--experiment-ideas)
+        for a running list of experiment ideas grouped by effort — check there
+        first in case it's already scoped out.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: >
+        If this touches the normalized schema or the local API protocol,
+        please note whether it's verified against a real payload/the current
+        dorita980-or-similar reference, or if it's a guess that'll need
+        verification.
+
+  - type: dropdown
+    id: model-scope
+    attributes:
+      label: Does this apply to all models, or just mapping-capable ones?
+      options:
+        - All models
+        - Mapping-capable only (needs vSLAM/room data)
+        - Not sure
+    validations:
+      required: true

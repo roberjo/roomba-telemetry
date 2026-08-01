@@ -1,0 +1,60 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. If you don't have physical
+        hardware to reproduce with, that's fine — describe what you saw and,
+        if possible, attach a raw payload capture (see `collector`'s pairing
+        docs for how to log raw MQTT payloads).
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which part of the project?
+      options:
+        - collector (MQTT connection, normalization, pairing)
+        - api (FastAPI service, mission commands)
+        - web (dashboard)
+        - Not sure / spans multiple
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what actually happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: >
+        If this needs a physical robot, say so. If you can reproduce it
+        against a fixture in `collector/tests/fixtures/` (or a new one you
+        captured), even better — that's the fastest path to a fix.
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: Robot model (if hardware-related)
+      placeholder: "e.g. Roomba 692, 960, i7"
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version (if known)
+      placeholder: "e.g. 3.5.17+we+21 — visible in the iRobot app, or the Device card on this dashboard"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / error output
+      render: shell
