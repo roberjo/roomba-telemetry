@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
-
-from collector.normalize import normalize, WEEKDAYS
+from collector.normalize import WEEKDAYS, normalize
 
 FIXTURES = Path(__file__).parent / "fixtures"
 

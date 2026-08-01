@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -13,68 +12,68 @@ from pydantic import BaseModel
 class WeeklySchedule(BaseModel):
     # index 0 = Sunday, matching the robot's own convention (see cleanSchedule
     # in a raw payload — h/m are local start times, cycle is "clean" or "none")
-    cycle: List[Optional[str]]
-    hour: List[Optional[int]]
-    minute: List[Optional[int]]
+    cycle: list[str | None]
+    hour: list[int | None]
+    minute: list[int | None]
 
 
 class StatusResponse(BaseModel):
     received_at: float
     model_class: str
 
-    battery_pct: Optional[int] = None
-    bin_present: Optional[bool] = None
-    bin_full: Optional[bool] = None
-    cycle: Optional[str] = None
-    phase: Optional[str] = None
-    error_code: Optional[int] = None
-    not_ready_code: Optional[int] = None
-    mission_minutes: Optional[int] = None
-    mission_sqft: Optional[float] = None
-    mission_initiator: Optional[str] = None
+    battery_pct: int | None = None
+    bin_present: bool | None = None
+    bin_full: bool | None = None
+    cycle: str | None = None
+    phase: str | None = None
+    error_code: int | None = None
+    not_ready_code: int | None = None
+    mission_minutes: int | None = None
+    mission_sqft: float | None = None
+    mission_initiator: str | None = None
 
     # device identity — static, but re-sent with every state update
-    robot_name: Optional[str] = None
-    sku: Optional[str] = None
-    software_version: Optional[str] = None
+    robot_name: str | None = None
+    sku: str | None = None
+    software_version: str | None = None
 
     # last command provenance
-    last_command: Optional[str] = None
-    last_command_initiator: Optional[str] = None
-    last_command_time: Optional[int] = None
+    last_command: str | None = None
+    last_command_initiator: str | None = None
+    last_command_time: int | None = None
 
     # cleaning preferences (read-only)
-    pref_carpet_boost: Optional[bool] = None
-    pref_vac_high: Optional[bool] = None
-    pref_two_pass: Optional[bool] = None
-    pref_eco_charge: Optional[bool] = None
-    pref_bin_pause: Optional[bool] = None
+    pref_carpet_boost: bool | None = None
+    pref_vac_high: bool | None = None
+    pref_two_pass: bool | None = None
+    pref_eco_charge: bool | None = None
+    pref_bin_pause: bool | None = None
 
-    schedule: Optional[WeeklySchedule] = None
+    schedule: WeeklySchedule | None = None
 
     # mapping-model-only
-    pose_x: Optional[float] = None
-    pose_y: Optional[float] = None
-    pose_theta: Optional[float] = None
+    pose_x: float | None = None
+    pose_y: float | None = None
+    pose_theta: float | None = None
 
 
 class Mission(BaseModel):
     id: int
     started_at: float
-    ended_at: Optional[float] = None
-    initiator: Optional[str] = None
-    outcome: Optional[str] = None
-    duration_minutes: Optional[int] = None
-    area_sqft: Optional[float] = None
-    battery_start_pct: Optional[int] = None
-    battery_end_pct: Optional[int] = None
+    ended_at: float | None = None
+    initiator: str | None = None
+    outcome: str | None = None
+    duration_minutes: int | None = None
+    area_sqft: float | None = None
+    battery_start_pct: int | None = None
+    battery_end_pct: int | None = None
 
 
 class ErrorEvent(BaseModel):
     id: int
     occurred_at: float
     error_code: int
-    mission_id: Optional[int] = None
+    mission_id: int | None = None
 
 
 def status_response_from_row(row: sqlite3.Row) -> StatusResponse:

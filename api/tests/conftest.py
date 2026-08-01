@@ -76,8 +76,7 @@ def db_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 def client(db_path: Path):
     # Imported after ROOMBA_DB_PATH is set, since api.db reads it at call time
     # via get_connection() — safe either way, but keep the dependency explicit.
-    from fastapi.testclient import TestClient
-
     from api.main import create_app
+    from fastapi.testclient import TestClient
 
     return TestClient(create_app())

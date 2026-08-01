@@ -34,7 +34,7 @@ def test_stuck_mqtt_client_cannot_hang_the_request(monkeypatch):
     that never returns to simulate the stuck case."""
     import time
 
-    import api.mqtt_commands as mqtt_commands
+    from api import mqtt_commands
 
     monkeypatch.setenv("ROOMBA_IP", "192.168.1.99")
     monkeypatch.setenv("ROOMBA_BLID", "test-blid")

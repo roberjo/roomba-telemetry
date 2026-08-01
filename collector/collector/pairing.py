@@ -66,7 +66,7 @@ def discover(broadcast_ip: str = "255.255.255.255") -> dict | None:
     try:
         sock.sendto(DISCOVERY_MESSAGE, (broadcast_ip, DISCOVERY_PORT))
         data, addr = sock.recvfrom(4096)
-    except socket.timeout:
+    except TimeoutError:
         return None
     finally:
         sock.close()
