@@ -23,8 +23,8 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "collector"))
 
-from collector.normalize import normalize  # noqa: E402
-from collector.storage import Storage  # noqa: E402
+from collector.normalize import normalize
+from collector.storage import Storage
 
 
 def infer_model_class(fixture_path: Path) -> str:
